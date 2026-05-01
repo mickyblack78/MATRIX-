@@ -1,124 +1,153 @@
-1: <!DOCTYPE html>
-2: <html lang="en">
-3: <head>
-4:     <meta charset="UTF-8">
-5:     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-6:     <title>Notepad.exe.wtf.</title>
-7:     <style>
-8:         body { background: #000; color: #0f0; font-family: monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-9:         .sticky-bar { background: #0a0a0a; padding: 10px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #0f0; z-index: 9999; height: 50px; box-sizing: border-box; }
-10:         .footer { border-top: 1px solid #0f0; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; z-index: 9999; background: #0a0a0a; height: 50px; display: flex; align-items: center; padding: 0 10px; }
-11:         .editor-wrapper { display: flex; flex: 1; overflow: hidden; background: #050505; position: relative; height: calc(100vh - 100px); }
-12:         #line-numbers { width: 45px; background: #0a0a0a; color: #444; padding: 10px 5px 80px 5px; text-align: right; font-size: 16px; line-height: 1.5; user-select: none; border-right: 1px solid #222; overflow: hidden; box-sizing: border-box; }
-13:         #editor { flex: 1; background: transparent; color: #0f0; border: none; padding: 10px 15px 80px 15px; font-size: 16px; line-height: 1.5; outline: none; resize: none; overflow-y: auto; box-sizing: border-box; tab-size: 4; white-space: pre; }
-14:         #filename { background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; width: 100px; }
-15:         #saved-list { background: #000; color: #0f0; border: 1px solid #0f0; flex-grow: 1; max-width: 90px; }
-16:         button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
-17:         button:active { background: #0f0; color: #000; }
-18:         .switch { position: relative; display: inline-block; width: 34px; height: 20px; flex-shrink: 0; }
-19:         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #222; border: 1px solid #0f0; transition: .4s; }
-20:         .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: #0f0; transition: .4s; }
-21:         input:checked + .slider:before { transform: translateX(14px); }
-22:         input { display: none; }
-23:     </style>
-24: </head>
-25: <body>
-26: 
-27:     <div class="sticky-bar">
-28:         <label class="switch"><input type="checkbox" id="storage-toggle"><span class="slider"></span></label>
-29:         <span id="toggle-label" style="font-size: 10px; color: #0f0;">PHONE</span>
-30:         <input type="text" id="filename" placeholder="name.js">
-31:         <select id="saved-list"></select>
-32:         <button id="run-top">RUN</button>
-33:     </div>
-34: 
-35:     <div class="editor-wrapper">
-36:         <div id="line-numbers">1</div>
-37:         <textarea id="editor" placeholder="Write code..." spellcheck="false"></textarea>
-38:     </div>
-39: 
-40:     <div class="sticky-bar footer">
-41:         <div id="stats" style="font-size: 10px; color: #444;">L: 1</div>
-42:         <div style="margin-left: auto; display: flex; gap: 8px;">
-43:             <button onclick="copyForGemini()">COPY FOR GEMINI</button>
-44:             <button onclick="handleGlobalSave()">SAVE</button>
-45:         </div>
-46:     </div>
-47: 
-48:     <script>
-49:         const editor = document.getElementById('editor');
-50:         const lineNumbers = document.getElementById('line-numbers');
-51:         const filenameInput = document.getElementById('filename');
-52:         const storageToggle = document.getElementById('storage-toggle');
-53:         const savedList = document.getElementById('saved-list');
-54: 
-55:         const updateLines = () => {
-56:             const lines = editor.value.split('\n').length;
-57:             lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
-58:             document.getElementById('stats').innerText = "L: " + lines;
-59:         };
-60: 
-61:         // NEW: Function to copy with line numbers included
-62:         function copyForGemini() {
-63:             const lines = editor.value.split('\n');
-64:             const numberedCode = lines.map((line, index) => `${index + 1}: ${line}`).join('\n');
-65:             navigator.clipboard.writeText(numberedCode);
-66:             alert("Numbered code copied to clipboard!");
-67:         }
-68: 
-69:         editor.addEventListener('input', updateLines);
-70:         editor.addEventListener('scroll', () => { lineNumbers.scrollTop = editor.scrollTop; });
-71:         
-72:         editor.addEventListener('keydown', (e) => {
-73:             if (e.key === 'Tab') {
-74:                 e.preventDefault();
-75:                 const s = editor.selectionStart;
-76:                 editor.value = editor.value.substring(0, s) + "    " + editor.value.substring(editor.selectionEnd);
-77:                 editor.selectionEnd = s + 4;
-78:                 updateLines();
-79:             }
-80:         });
-81: 
-82:         document.getElementById('run-top').onclick = () => {
-83:             const blob = new Blob([editor.value], { type: 'text/html' });
-84:             window.open(URL.createObjectURL(blob), '_blank');
-85:         };
-86: 
-87:         function syncHistory(name, content) {
-88:             let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-89:             history = [{name, content, ts: Date.now()}, ...history.filter(i => i.name !== name)].slice(0, 20);
-90:             localStorage.setItem('app_history', JSON.stringify(history));
-91:             renderHistory();
-92:         }
-93: 
-94:         function renderHistory() {
-95:             let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-96:             savedList.innerHTML = '<option value="">-- Hist --</option>';
-97:             history.forEach(i => savedList.add(new Option(i.name, i.name)));
-98:         }
-99: 
-100:         window.handleGlobalSave = () => {
-101:             let name = filenameInput.value.trim() || "untitled.html";
-102:             if (!name.includes('.')) name += ".html";
-103:             if (storageToggle.checked) {
-104:                 syncHistory(name, editor.value);
-105:             } else {
-106:                 const a = document.createElement("a");
-107:                 a.download = name;
-108:                 a.href = window.URL.createObjectURL(new Blob([editor.value], { type: 'text/plain' }));
-109:                 a.click();
-110:             }
-111:         };
-112: 
-113:         storageToggle.onchange = () => { document.getElementById('toggle-label').innerText = storageToggle.checked ? "APP" : "PHONE"; };
-114:         savedList.onchange = () => {
-115:             let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-116:             let item = history.find(i => i.name === savedList.value);
-117:             if (item) { editor.value = item.content; filenameInput.value = item.name; updateLines(); }
-118:         };
-119: 
-120:         renderHistory();
-121:         updateLines();
-122:     </script>
-123: </body>
-124: </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Notepad.exe.wtf.</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
+        
+        .sticky-bar { 
+            background: #0a0a0a; padding: 10px; display: flex; gap: 8px; align-items: center; 
+            border-bottom: 1px solid #0f0; z-index: 9999; height: 60px; box-sizing: border-box; width: 100%; 
+        }
+        
+        .footer { 
+            border-top: 1px solid #0f0; position: fixed; bottom: 0; width: 100%; 
+            box-sizing: border-box; z-index: 9999; background: #0a0a0a; height: 60px; 
+            display: flex; align-items: center; padding: 0 10px; 
+        }
+        
+        .editor-wrapper { 
+            display: flex; flex: 1; overflow: hidden; background: #050505; 
+            position: relative; height: calc(100vh - 120px); width: 100%; 
+        }
+        
+        #line-numbers { 
+            width: 50px; background: #0a0a0a; color: #444; 
+            padding: 10px 5px 100px 5px; text-align: right; font-size: 16px; 
+            line-height: 1.5; user-select: none; border-right: 1px solid #222; 
+            overflow: hidden; box-sizing: border-box; flex-shrink: 0; 
+        }
+
+        #editor { 
+            flex: 1; background: transparent; color: #0f0; border: none; 
+            padding: 10px 15px 100px 15px; font-size: 16px; line-height: 1.5; 
+            outline: none; resize: none; overflow-y: auto; 
+            box-sizing: border-box; tab-size: 4; white-space: pre; 
+            width: calc(100% - 50px);
+        }
+
+        #filename { background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; width: 80px; font-size: 12px; }
+        #saved-list { background: #000; color: #0f0; border: 1px solid #0f0; flex-grow: 1; max-width: 80px; height: 30px; }
+        
+        button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 8px 10px; cursor: pointer; font-weight: bold; font-size: 11px; white-space: nowrap; }
+        button:active { background: #0f0; color: #000; }
+        
+        .switch { position: relative; display: inline-block; width: 34px; height: 20px; flex-shrink: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #222; border: 1px solid #0f0; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: #0f0; transition: .4s; }
+        input:checked + .slider:before { transform: translateX(14px); }
+        input { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-bar">
+        <label class="switch"><input type="checkbox" id="storage-toggle"><span class="slider"></span></label>
+        <span id="toggle-label" style="font-size: 10px; color: #0f0;">PHONE</span>
+        <input type="text" id="filename" placeholder="name.js">
+        <select id="saved-list"></select>
+        <button id="run-top">RUN</button>
+    </div>
+
+    <div class="editor-wrapper">
+        <div id="line-numbers">1</div>
+        <textarea id="editor" placeholder="Write code..." spellcheck="false"></textarea>
+    </div>
+
+    <div class="sticky-bar footer">
+        <div id="stats" style="font-size: 10px; color: #444;">L: 1</div>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+            <button onclick="copyForGemini()">COPY FOR GEMINI</button>
+            <button onclick="handleGlobalSave()">SAVE</button>
+        </div>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const lineNumbers = document.getElementById('line-numbers');
+        const filenameInput = document.getElementById('filename');
+        const storageToggle = document.getElementById('storage-toggle');
+        const savedList = document.getElementById('saved-list');
+
+        const updateLines = () => {
+            const lines = editor.value.split('\n').length;
+            lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+            document.getElementById('stats').innerText = "L: " + lines;
+        };
+
+        function copyForGemini() {
+            const lines = editor.value.split('\n');
+            const numberedCode = lines.map((line, index) => `${index + 1}: ${line}`).join('\n');
+            navigator.clipboard.writeText(numberedCode).then(() => {
+                alert("Numbered code copied!");
+            });
+        }
+
+        editor.addEventListener('input', updateLines);
+        editor.addEventListener('scroll', () => { lineNumbers.scrollTop = editor.scrollTop; });
+        
+        editor.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const s = editor.selectionStart;
+                editor.value = editor.value.substring(0, s) + "    " + editor.value.substring(editor.selectionEnd);
+                editor.selectionEnd = s + 4;
+                updateLines();
+            }
+        });
+
+        document.getElementById('run-top').onclick = () => {
+            const blob = new Blob([editor.value], { type: 'text/html' });
+            window.open(URL.createObjectURL(blob), '_blank');
+        };
+
+        function syncHistory(name, content) {
+            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
+            history = [{name, content, ts: Date.now()}, ...history.filter(i => i.name !== name)].slice(0, 20);
+            localStorage.setItem('app_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
+            savedList.innerHTML = '<option value="">-- Hist --</option>';
+            history.forEach(i => savedList.add(new Option(i.name, i.name)));
+        }
+
+        window.handleGlobalSave = () => {
+            let name = filenameInput.value.trim() || "untitled.html";
+            if (!name.includes('.')) name += ".html";
+            if (storageToggle.checked) {
+                syncHistory(name, editor.value);
+            } else {
+                const a = document.createElement("a");
+                a.download = name;
+                a.href = window.URL.createObjectURL(new Blob([editor.value], { type: 'text/plain' }));
+                a.click();
+            }
+        };
+
+        storageToggle.onchange = () => { document.getElementById('toggle-label').innerText = storageToggle.checked ? "APP" : "PHONE"; };
+        savedList.onchange = () => {
+            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
+            let item = history.find(i => i.name === savedList.value);
+            if (item) { editor.value = item.content; filenameInput.value = item.name; updateLines(); }
+        };
+
+        renderHistory();
+        updateLines();
+    </script>
+</body>
+</html>
