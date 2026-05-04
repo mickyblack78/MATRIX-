@@ -3,62 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Notepad.exe.wtf.</title>
+    <title>MATRIX</title>
     <style>
-        body { background: #000; color: #0f0; font-family: monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
-        
-        .sticky-bar { 
-            background: #0a0a0a; padding: 10px; display: flex; gap: 8px; align-items: center; 
-            border-bottom: 1px solid #0f0; z-index: 9999; height: 60px; box-sizing: border-box; width: 100%; 
+        html, body { 
+            background: #000; 
+            color: #0f0; 
+            font-family: monospace; 
+            margin: 0; 
+            padding: 0;
+            height: 100%; 
+            width: 100%; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
         }
         
-        .footer { 
-            border-top: 1px solid #0f0; position: fixed; bottom: 0; width: 100%; 
-            box-sizing: border-box; z-index: 9999; background: #0a0a0a; height: 60px; 
-            display: flex; align-items: center; padding: 0 10px; 
+        /* Fixed Header */
+        .header-bar { 
+            background: #0a0a0a; 
+            padding: 10px; 
+            display: flex; 
+            gap: 5px; 
+            align-items: center; 
+            border-bottom: 1px solid #0f0; 
+            height: 60px; 
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
         
+        /* Fixed Footer */
+        .footer-bar { 
+            background: #0a0a0a; 
+            border-top: 1px solid #0f0; 
+            height: 70px; 
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 5px;
+            align-items: center;
+            justify-content: space-around;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        
+        /* Scrollable Editor Container */
         .editor-wrapper { 
-            display: flex; flex: 1; overflow: hidden; background: #050505; 
-            position: relative; height: calc(100vh - 120px); width: 100%; 
+            flex: 1; 
+            display: flex; 
+            overflow: hidden; 
+            background: #050505; 
+            position: relative;
         }
         
         #line-numbers { 
-            width: 50px; background: #0a0a0a; color: #444; 
-            padding: 10px 5px 100px 5px; text-align: right; font-size: 16px; 
-            line-height: 1.5; user-select: none; border-right: 1px solid #222; 
-            overflow: hidden; box-sizing: border-box; flex-shrink: 0; 
+            width: 45px; 
+            background: #0a0a0a; 
+            color: #444; 
+            padding: 10px 5px; 
+            text-align: right; 
+            font-size: 14px; 
+            line-height: 1.5; 
+            user-select: none; 
+            border-right: 1px solid #222; 
+            overflow: hidden; 
         }
 
         #editor { 
-            flex: 1; background: transparent; color: #0f0; border: none; 
-            padding: 10px 15px 100px 15px; font-size: 16px; line-height: 1.5; 
-            outline: none; resize: none; overflow-y: auto; 
-            box-sizing: border-box; tab-size: 4; white-space: pre; 
-            width: calc(100% - 50px);
+            flex: 1; 
+            background: transparent; 
+            color: #0f0; 
+            border: none; 
+            padding: 10px; 
+            font-size: 14px; 
+            line-height: 1.5; 
+            outline: none; 
+            resize: none; 
+            overflow-y: auto; 
+            tab-size: 4; 
+            white-space: pre; 
         }
 
-        #filename { background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; width: 80px; font-size: 12px; }
-        #saved-list { background: #000; color: #0f0; border: 1px solid #0f0; flex-grow: 1; max-width: 80px; height: 30px; }
+        input, select, button { 
+            background: #000; 
+            color: #0f0; 
+            border: 1px solid #0f0; 
+            font-size: 11px; 
+            height: 28px;
+            box-sizing: border-box;
+        }
         
-        button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 8px 10px; cursor: pointer; font-weight: bold; font-size: 11px; white-space: nowrap; }
+        #filename { flex: 1; padding: 0 5px; min-width: 0; }
+        #extension { width: 65px; }
+        
+        button { cursor: pointer; padding: 0 8px; font-weight: bold; }
         button:active { background: #0f0; color: #000; }
         
-        .switch { position: relative; display: inline-block; width: 34px; height: 20px; flex-shrink: 0; }
+        .switch { position: relative; display: inline-block; width: 30px; height: 18px; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #222; border: 1px solid #0f0; transition: .4s; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: #0f0; transition: .4s; }
-        input:checked + .slider:before { transform: translateX(14px); }
-        input { display: none; }
+        .slider:before { position: absolute; content: ""; height: 10px; width: 10px; left: 3px; bottom: 3px; background: #0f0; transition: .4s; }
+        input:checked + .slider:before { transform: translateX(12px); }
+        input[type="checkbox"] { display: none; }
+
+        #stats { font-size: 10px; color: #444; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="sticky-bar">
-        <label class="switch"><input type="checkbox" id="storage-toggle"><span class="slider"></span></label>
-        <span id="toggle-label" style="font-size: 10px; color: #0f0;">PHONE</span>
-        <input type="text" id="filename" placeholder="name.js">
-        <select id="saved-list"></select>
-        <button id="run-top">RUN</button>
+    <div class="header-bar">
+        <input type="text" id="filename" placeholder="filename">
+        <select id="extension">
+            <option value=".html">.html</option>
+            <option value=".js">.js</option>
+            <option value=".css">.css</option>
+            <option value=".txt">.txt</option>
+            <option value=".md">.md</option>
+            <option value=".json">.json</option>
+            <option value=".csv">.csv</option>
+            <option value=".xml">.xml</option>
+        </select>
+        <div id="stats">L: 1</div>
     </div>
 
     <div class="editor-wrapper">
@@ -66,85 +129,118 @@
         <textarea id="editor" placeholder="Write code..." spellcheck="false"></textarea>
     </div>
 
-    <div class="sticky-bar footer">
-        <div id="stats" style="font-size: 10px; color: #444;">L: 1</div>
-        <div style="margin-left: auto; display: flex; gap: 8px;">
-            <button onclick="copyForGemini()">COPY FOR GEMINI</button>
-            <button onclick="handleGlobalSave()">SAVE</button>
+    <div class="footer-bar">
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <label class="switch"><input type="checkbox" id="storage-toggle"><span class="slider"></span></label>
+            <span id="toggle-label" style="font-size: 8px;">PHONE</span>
         </div>
+        
+        <select id="saved-list" style="width: 70px;"><option value="">Recents</option></select>
+        
+        <button onclick="addNumbers()"># ADD</button>
+        <button onclick="stripNumbers()">X REM</button>
+        <button onclick="copyContent()">COPY</button>
+        <button onclick="handleGlobalSave()">SAVE</button>
+        <button onclick="runCode()">RUN</button>
     </div>
 
     <script>
         const editor = document.getElementById('editor');
         const lineNumbers = document.getElementById('line-numbers');
         const filenameInput = document.getElementById('filename');
+        const extensionSelect = document.getElementById('extension');
         const storageToggle = document.getElementById('storage-toggle');
         const savedList = document.getElementById('saved-list');
+        const stats = document.getElementById('stats');
 
-        const updateLines = () => {
+        function updateLines() {
             const lines = editor.value.split('\n').length;
             lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
-            document.getElementById('stats').innerText = "L: " + lines;
-        };
-
-        function copyForGemini() {
-            const lines = editor.value.split('\n');
-            const numberedCode = lines.map((line, index) => `${index + 1}: ${line}`).join('\n');
-            navigator.clipboard.writeText(numberedCode).then(() => {
-                alert("Numbered code copied!");
-            });
+            stats.innerText = "L: " + lines;
         }
 
         editor.addEventListener('input', updateLines);
         editor.addEventListener('scroll', () => { lineNumbers.scrollTop = editor.scrollTop; });
-        
-        editor.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const s = editor.selectionStart;
-                editor.value = editor.value.substring(0, s) + "    " + editor.value.substring(editor.selectionEnd);
-                editor.selectionEnd = s + 4;
-                updateLines();
-            }
-        });
 
-        document.getElementById('run-top').onclick = () => {
+        // Function: Add Line Numbers
+        function addNumbers() {
+            const lines = editor.value.split('\n');
+            const numbered = lines.map((line, index) => `${index + 1}: ${line}`).join('\n');
+            editor.value = numbered;
+            updateLines();
+        }
+
+        // Function: Smart Strip Numbers (Removes "Number: " only at line starts)
+        function stripNumbers() {
+            const lines = editor.value.split('\n');
+            const stripped = lines.map(line => line.replace(/^\d+:\s?/, '')).join('\n');
+            editor.value = stripped;
+            updateLines();
+        }
+
+        // Function: Copy visible content
+        function copyContent() {
+            navigator.clipboard.writeText(editor.value).then(() => {
+                const btn = event.target;
+                const oldText = btn.innerText;
+                btn.innerText = "COPIED!";
+                setTimeout(() => btn.innerText = oldText, 1000);
+            });
+        }
+
+        // Function: Run code in new tab
+        function runCode() {
             const blob = new Blob([editor.value], { type: 'text/html' });
             window.open(URL.createObjectURL(blob), '_blank');
-        };
+        }
 
-        function syncHistory(name, content) {
-            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-            history = [{name, content, ts: Date.now()}, ...history.filter(i => i.name !== name)].slice(0, 20);
-            localStorage.setItem('app_history', JSON.stringify(history));
-            renderHistory();
+        // Function: Save Logic
+        function handleGlobalSave() {
+            let name = filenameInput.value.trim() || "untitled";
+            let ext = extensionSelect.value;
+            let fullFilename = name.endsWith(ext) ? name : name + ext;
+
+            if (storageToggle.checked) {
+                // Save to APP (LocalStorage)
+                let history = JSON.parse(localStorage.getItem('app_history') || '[]');
+                history = [{name: fullFilename, content: editor.value, ts: Date.now()}, ...history.filter(i => i.name !== fullFilename)].slice(0, 20);
+                localStorage.setItem('app_history', JSON.stringify(history));
+                renderHistory();
+                flashButton(event.target);
+            } else {
+                // Save to PHONE (Download)
+                const a = document.createElement("a");
+                a.download = fullFilename;
+                a.href = window.URL.createObjectURL(new Blob([editor.value], { type: 'text/plain' }));
+                a.click();
+            }
+        }
+
+        function flashButton(btn) {
+            btn.style.background = "#0f0";
+            btn.style.color = "#000";
+            setTimeout(() => { btn.style.background = "#000"; btn.style.color = "#0f0"; }, 500);
         }
 
         function renderHistory() {
             let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-            savedList.innerHTML = '<option value="">-- Hist --</option>';
+            savedList.innerHTML = '<option value="">Recents</option>';
             history.forEach(i => savedList.add(new Option(i.name, i.name)));
         }
 
-        window.handleGlobalSave = () => {
-            let name = filenameInput.value.trim() || "untitled.html";
-            if (!name.includes('.')) name += ".html";
-            if (storageToggle.checked) {
-                syncHistory(name, editor.value);
-            } else {
-                const a = document.createElement("a");
-                a.download = name;
-                a.href = window.URL.createObjectURL(new Blob([editor.value], { type: 'text/plain' }));
-                a.click();
+        savedList.onchange = () => {
+            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
+            let item = history.find(i => i.name === savedList.value);
+            if (item) { 
+                editor.value = item.content; 
+                let lastDot = item.name.lastIndexOf('.');
+                filenameInput.value = item.name.substring(0, lastDot);
+                extensionSelect.value = item.name.substring(lastDot);
+                updateLines(); 
             }
         };
 
         storageToggle.onchange = () => { document.getElementById('toggle-label').innerText = storageToggle.checked ? "APP" : "PHONE"; };
-        savedList.onchange = () => {
-            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-            let item = history.find(i => i.name === savedList.value);
-            if (item) { editor.value = item.content; filenameInput.value = item.name; updateLines(); }
-        };
 
         renderHistory();
         updateLines();
