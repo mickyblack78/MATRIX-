@@ -46,3 +46,21 @@ private void drawTriangle(Canvas canvas, float x1, float y1, float x2, float y2,
     }
 }
 }
+// Inside MainActivity.java
+private int[] generatePalette() {
+    int[] palette = new int[48];
+    for (int i = 0; i < 48; i++) {
+        // Distribute 48 colors across the 360-degree hue spectrum
+        float hue = (i * 360f) / 48f;
+        palette[i] = Color.HSVToColor(new float[]{hue, 0.8f, 0.9f});
+    }
+    return palette;
+}
+
+private int[] monochromaticShades = {
+    0xFF000000, // Pure Black
+    0xFF444444, // Dark Grey
+    0xFF888888, // Medium Grey
+    0xFFCCCCCC, // Light Grey
+    0xFFFFFFFF  // Pure White
+};
