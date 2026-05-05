@@ -1,249 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MATRIX</title>
-    <style>
-        html, body { 
-            background: #000; 
-            color: #0f0; 
-            font-family: monospace; 
-            margin: 0; 
-            padding: 0;
-            height: 100%; 
-            width: 100%; 
-            overflow: hidden; 
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Fixed Header */
-        .header-bar { 
-            background: #0a0a0a; 
-            padding: 10px; 
-            display: flex; 
-            gap: 5px; 
-            align-items: center; 
-            border-bottom: 1px solid #0f0; 
-            height: 60px; 
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
-        
-        /* Fixed Footer */
-        .footer-bar { 
-            background: #0a0a0a; 
-            border-top: 1px solid #0f0; 
-            height: 70px; 
-            display: flex; 
-            flex-wrap: wrap;
-            gap: 4px;
-            padding: 5px;
-            align-items: center;
-            justify-content: space-around;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
-        
-        /* Scrollable Editor Container */
-        .editor-wrapper { 
-            flex: 1; 
-            display: flex; 
-            overflow: hidden; 
-            background: #050505; 
-            position: relative;
-        }
-        
-        #line-numbers { 
-            width: 45px; 
-            background: #0a0a0a; 
-            color: #444; 
-            padding: 10px 5px; 
-            text-align: right; 
-            font-size: 14px; 
-            line-height: 1.5; 
-            user-select: none; 
-            border-right: 1px solid #222; 
-            overflow: hidden; 
-        }
+        <        function handleGlobalSave() {
+            (i => savedList.<activity
+    android:name=".MainActivity"
+    android:exported="true"
+    android:windowSoftInputMode="adjustResize">
+    <!-- ... -->
+</activity><?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="#DDDDDD">
 
-        #editor { 
-            flex: 1; 
-            background: transparent; 
-            color: #0f0; 
-            border: none; 
-            padding: 10px; 
-            font-size: 14px; 
-            line-height: 1.5; 
-            outline: none; 
-            resize: none; 
-            overflow-y: auto; 
-            tab-size: 4; 
-            white-space: pre; 
-        }
+    <!-- THE DRAWING VIEW (Phase 2 Placeholder) -->
+    <!-- This view will shrink automatically when the keyboard appears -->
+    <View
+        android:id="@+id/drawing_canvas_placeholder"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#FFFFFF"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_control_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        input, select, button { 
-            background: #000; 
-            color: #0f0; 
-            border: 1px solid #0f0; 
-            font-size: 11px; 
-            height: 28px;
-            box-sizing: border-box;
-        }
-        
-        #filename { flex: 1; padding: 0 5px; min-width: 0; }
-        #extension { width: 65px; }
-        
-        button { cursor: pointer; padding: 0 8px; font-weight: bold; }
-        button:active { background: #0f0; color: #000; }
-        
-        .switch { position: relative; display: inline-block; width: 30px; height: 18px; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #222; border: 1px solid #0f0; transition: .4s; }
-        .slider:before { position: absolute; content: ""; height: 10px; width: 10px; left: 3px; bottom: 3px; background: #0f0; transition: .4s; }
-        input:checked + .slider:before { transform: translateX(12px); }
-        input[type="checkbox"] { display: none; }
+    <!-- 10% VISIBLE TRANSPARENT BUTTON (Top Left) -->
+    <ImageButton
+        android:id="@+id/master_menu_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_margin="12dp"
+        android:padding="12dp"
+        android:scaleType="centerInside"
+        android:background="#1A000000" 
+        android:src="@android:drawable/ic_menu_more"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        #stats { font-size: 10px; color: #444; margin-right: 5px; }
-    </style>
-</head>
-<body>
+    <!-- BOTTOM CONTROL CONTAINER -->
+    <LinearLayout
+        android:id="@+id/bottom_control_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#F5F5F5"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <div class="header-bar">
-        <input type="text" id="filename" placeholder="filename">
-        <select id="extension">
-            <option value=".html">.html</option>
-            <option value=".js">.js</option>
-            <option value=".css">.css</option>
-            <option value=".txt">.txt</option>
-            <option value=".md">.md</option>
-            <option value=".json">.json</option>
-            <option value=".csv">.csv</option>
-            <option value=".xml">.xml</option>
-        </select>
-        <div id="stats">L: 1</div>
-    </div>
+        <!-- This row will eventually hold your "Save/Load/Recent" buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:gravity="center">
 
-    <div class="editor-wrapper">
-        <div id="line-numbers">1</div>
-        <textarea id="editor" placeholder="Write code..." spellcheck="false"></textarea>
-    </div>
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="SAVE"
+                style="?android:attr/borderlessButtonStyle"/>
 
-    <div class="footer-bar">
-        <div style="display:flex; flex-direction:column; align-items:center;">
-            <label class="switch"><input type="checkbox" id="storage-toggle"><span class="slider"></span></label>
-            <span id="toggle-label" style="font-size: 8px;">PHONE</span>
-        </div>
-        
-        <select id="saved-list" style="width: 70px;"><option value="">Recents</option></select>
-        
-        <button onclick="addNumbers()"># ADD</button>
-        <button onclick="stripNumbers()">X REM</button>
-        <button onclick="copyContent()">COPY</button>
-        <button onclick="handleGlobalSave()">SAVE</button>
-        <button onclick="runCode()">RUN</button>
-    </div>
+            <Button
+                android:id="@+id/btn_load"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="LOAD"
+                style="?android:attr/borderlessButtonStyle"/>
 
-    <script>
-        const editor = document.getElementById('editor');
-        const lineNumbers = document.getElementById('line-numbers');
-        const filenameInput = document.getElementById('filename');
-        const extensionSelect = document.getElementById('extension');
-        const storageToggle = document.getElementById('storage-toggle');
-        const savedList = document.getElementById('saved-list');
-        const stats = document.getElementById('stats');
+            <Button
+                android:id="@+id/btn_recent"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="RECENT"
+                style="?android:attr/borderlessButtonStyle"/>
+        </LinearLayout>
 
-        function updateLines() {
-            const lines = editor.value.split('\n').length;
-            lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
-            stats.innerText = "L: " + lines;
-        }
+    </LinearLayout>
 
-        editor.addEventListener('input', updateLines);
-        editor.addEventListener('scroll', () => { lineNumbers.scrollTop = editor.scrollTop; });
-
-        // Function: Add Line Numbers
-        function addNumbers() {
-            const lines = editor.value.split('\n');
-            const numbered = lines.map((line, index) => `${index + 1}: ${line}`).join('\n');
-            editor.value = numbered;
-            updateLines();
-        }
-
-        // Function: Smart Strip Numbers (Removes "Number: " only at line starts)
-        function stripNumbers() {
-            const lines = editor.value.split('\n');
-            const stripped = lines.map(line => line.replace(/^\d+:\s?/, '')).join('\n');
-            editor.value = stripped;
-            updateLines();
-        }
-
-        // Function: Copy visible content
-        function copyContent() {
-            navigator.clipboard.writeText(editor.value).then(() => {
-                const btn = event.target;
-                const oldText = btn.innerText;
-                btn.innerText = "COPIED!";
-                setTimeout(() => btn.innerText = oldText, 1000);
-            });
-        }
-
-        // Function: Run code in new tab
-        function runCode() {
-            const blob = new Blob([editor.value], { type: 'text/html' });
-            window.open(URL.createObjectURL(blob), '_blank');
-        }
-
-        // Function: Save Logic
-        function handleGlobalSave() {
-            let name = filenameInput.value.trim() || "untitled";
-            let ext = extensionSelect.value;
-            let fullFilename = name.endsWith(ext) ? name : name + ext;
-
-            if (storageToggle.checked) {
-                // Save to APP (LocalStorage)
-                let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-                history = [{name: fullFilename, content: editor.value, ts: Date.now()}, ...history.filter(i => i.name !== fullFilename)].slice(0, 20);
-                localStorage.setItem('app_history', JSON.stringify(history));
-                renderHistory();
-                flashButton(event.target);
-            } else {
-                // Save to PHONE (Download)
-                const a = document.createElement("a");
-                a.download = fullFilename;
-                a.href = window.URL.createObjectURL(new Blob([editor.value], { type: 'text/plain' }));
-                a.click();
-            }
-        }
-
-        function flashButton(btn) {
-            btn.style.background = "#0f0";
-            btn.style.color = "#000";
-            setTimeout(() => { btn.style.background = "#000"; btn.style.color = "#0f0"; }, 500);
-        }
-
-        function renderHistory() {
-            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-            savedList.innerHTML = '<option value="">Recents</option>';
-            history.forEach(i => savedList.add(new Option(i.name, i.name)));
-        }
-
-        savedList.onchange = () => {
-            let history = JSON.parse(localStorage.getItem('app_history') || '[]');
-            let item = history.find(i => i.name === savedList.value);
-            if (item) { 
-                editor.value = item.content; 
-                let lastDot = item.name.lastIndexOf('.');
-                filenameInput.value = item.name.substring(0, lastDot);
-                extensionSelect.value = item.name.substring(lastDot);
-                updateLines(); 
-            }
-        };
-
-        storageToggle.onchange = () => { document.getElementById('toggle-label').innerText = storageToggle.checked ? "APP" : "PHONE"; };
-
-        renderHistory();
-        updateLines();
-    </script>
-</body>
-</html>
+</androidx.constraintlayout.widget.ConstraintLayout>(new Option(i.name, i.name)
